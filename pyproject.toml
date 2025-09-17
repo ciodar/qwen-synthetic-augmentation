@@ -1,0 +1,30 @@
+[project]
+name = "qwen-synthetic-augmentation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "diffusers",
+    "transformers",
+    "pillow",
+    "torch",
+    "gguf>=0.10.0",
+    "accelerate",
+    "torchvision>=0.23.0",
+]
+
+[tool.uv.sources]
+diffusers = { git = "https://github.com/huggingface/diffusers" }
+transformers = { git = "https://github.com/huggingface/transformers" }
+torch = [
+    { index = "pytorch-gpu" },
+]
+torchvision = [
+    { index = "pytorch-gpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-gpu"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
