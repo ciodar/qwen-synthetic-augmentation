@@ -3,3 +3,4 @@
 .python-version
 
 weights/
+*.pyc

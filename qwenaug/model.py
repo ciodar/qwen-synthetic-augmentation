@@ -2,6 +2,19 @@ import os
 from PIL import Image
 import torch
 
+from huggingface_hub import hf_hub_download
+
+def download_model_weights(directory='weights'):
+    original_repo = 'Qwen/Qwen-Image-Edit'
+    quantized_repo = 'QuantStack/Qwen-Image-Edit-GGUF'
+    # Download vae
+    os.makedirs('weights/vae',exist_ok=True)
+    hf_hub_download(repo_id=original_repo, filename='vae/diffusion_pytorch_model.safetensors', local_dir='weights')
+    os.makedirs('weights/vae',exist_ok=True)
+    hf_hub_download(repo_id=quantized_repo, filename='Qwen_Image_Edit-Q4_0.gguf', local_dir='weights/transformer')
+    # os.makedirs('weights/text_encoder',exist_ok=True)
+    # hf_hub_download(repo_id='Qwen/Qwen2.5-VL-7B-Instruct',  local_dir='weights/transformer')
+
 def load_qwen_image_edit():
     from diffusers import QwenImageEditPipeline, AutoencoderKLQwenImage, QwenImageTransformer2DModel, GGUFQuantizationConfig
     from diffusers.hooks import apply_group_offloading
@@ -15,7 +28,7 @@ def load_qwen_image_edit():
     # Load VAE
     vae = AutoencoderKLQwenImage.from_pretrained(
         'weights/vae/',
-        #config='weights/vae/config.json',
+        # config='weights/vae/config.json',
         torch_dtype=torch.bfloat16
     )
     print("Loaded vae!")
