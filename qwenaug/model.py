@@ -29,22 +29,15 @@ def load_flux_kontext():
     from diffusers import FluxKontextPipeline, GGUFQuantizationConfig, FluxTransformer2DModel
     from diffusers.hooks import apply_layerwise_casting, apply_group_offloading
     from transformers import T5EncoderModel
+    from nunchaku import NunchakuFluxTransformer2dModel, NunchakuT5EncoderModel
+    from nunchaku.utils import get_precision
     quantization_config=GGUFQuantizationConfig(compute_dtype=torch.bfloat16)
-    transformer = FluxTransformer2DModel.from_single_file(
-        pretrained_model_link_or_path_or_dict='weights/transformer/flux1-kontext-dev-Q2_K.gguf',
-        quantization_config=quantization_config,
-        config="weights/transformer/config.json",
-        dtype=torch.bfloat16
+    transformer = NunchakuFluxTransformer2dModel.from_pretrained(
+        f"nunchaku-tech/nunchaku-flux.1-kontext-dev/svdq-{get_precision()}_r32-flux.1-kontext-dev.safetensors"
     )
+    text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/nunchaku-t5/awq-int4-flux.1-t5xxl.safetensors")
     # transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
-    text_encoder_2 = T5EncoderModel.from_pretrained(
-        'city96/t5-v1_1-xxl-encoder-gguf',
-        gguf_file='t5-v1_1-xxl-encoder-Q3_K_M.gguf',
-        load_in:
-        # quantization_config=quantization_config,
-        # config="weights/text_encoder/t5/config.json",
-        dtype=torch.bfloat16
-    )
+
     # apply_layerwise_casting(
     #     text_encoder_2,
     #     storage_dtype=torch.float8_e4m3fn,
@@ -57,7 +50,7 @@ def load_flux_kontext():
         transformer=transformer,
         text_encoder_2=text_encoder_2,
         torch_dtype=torch.bfloat16, 
-        map_device="balanced"
+        device_map="balanced"
     )
     # apply_layerwise_casting(
     #     pipe.text_encoder,
@@ -161,6 +154,7 @@ if __name__ == "__main__":
     # Example usage:
     pipeline = load_flux_kontext()
     image = Image.open("examples/input.jpg").convert("RGB")
+    image.resize(48, 64)
     prompt = "Change the rabbit's color to purple, with a flash light background."
     inputs = {
         "image": image,
