@@ -1,4 +1,11 @@
 name: Example
+on:
+   push:
+      branches:
+      - main
+      - task*
+   pull_request:
+      types: [opened, synchronize, reopened]
 
 jobs:
   uv-example:
