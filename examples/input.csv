@@ -1,4 +1,4 @@
-input_image,overlay_text,overlay_image
-example1.jpg,Sample text,
-example2.jpg,,overlay1.jpg
-example3.jpg,Another text,overlay2.jpg
+input_image,overlay_text,overlay_image,prompt
+8588887973_79b1785aa6_z.jpg,,hat.png,Put the hat on the person.
+10091465_37f48aad05_z.jpg,DARIO,,Put the text {} on the person.
+4318932692_e3609f2d6d_z.jpg,,flippers.png,Change the shoes with flippers.

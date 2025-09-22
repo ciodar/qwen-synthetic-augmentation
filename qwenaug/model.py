@@ -11,7 +11,7 @@ def download_qwen_weights(directory='weights'):
     os.makedirs('weights/vae',exist_ok=True)
     hf_hub_download(repo_id=original_repo, filename='vae/diffusion_pytorch_model.safetensors', local_dir='weights')
     os.makedirs('weights/vae',exist_ok=True)
-    hf_hub_download(repo_id=quantized_repo, filename='Qwen_Image_Edit-Q4_0.gguf', local_dir='weights/transformer')
+    hf_hub_download(repo_id=quantized_repo, filename='Qwen_Image_Edit-Q8_0.gguf', local_dir='weights/transformer')
     # os.makedirs('weights/text_encoder',exist_ok=True)
     # hf_hub_download(repo_id='Qwen/Qwen2.5-VL-7B-Instruct',  local_dir='weights/transformer')
 
@@ -21,21 +21,31 @@ def download_kontext_weights(directory='weights'):
     os.makedirs('weights/vae',exist_ok=True)
     hf_hub_download(repo_id=original_repo, filename='vae/diffusion_pytorch_model.safetensors', local_dir='weights')
     os.makedirs('weights/transformer',exist_ok=True)
-    hf_hub_download(repo_id=quantized_repo, filename='flux1-kontext-dev-Q2_K.gguf', local_dir='weights/transformer')
+    hf_hub_download(repo_id=quantized_repo, filename='flux1-kontext-dev-Q8_0.gguf', local_dir='weights/transformer')
     os.makedirs('weights/text_encoder/t5', exist_ok=True)
-    hf_hub_download(repo_id='city96/t5-v1_1-xxl-encoder-gguf', filename='t5-v1_1-xxl-encoder-Q3_K_M.gguf', local_dir='weights/text_encoder/t5')
+    hf_hub_download(repo_id='city96/t5-v1_1-xxl-encoder-gguf', filename='t5-v1_1-xxl-encoder-Q8_0.gguf', local_dir='weights/text_encoder/t5')
 
 def load_flux_kontext():
-    from diffusers import FluxKontextPipeline, GGUFQuantizationConfig, FluxTransformer2DModel
+    from diffusers import FluxKontextPipeline, GGUFQuantizationConfig, FluxTransformer2DModel, FluxKontextInpaintPipeline
     from diffusers.hooks import apply_layerwise_casting, apply_group_offloading
     from transformers import T5EncoderModel
-    from nunchaku import NunchakuFluxTransformer2dModel, NunchakuT5EncoderModel
-    from nunchaku.utils import get_precision
+    # from nunchaku import NunchakuFluxTransformer2dModel, NunchakuT5EncoderModel
+    # from nunchaku.utils import get_precision
     quantization_config=GGUFQuantizationConfig(compute_dtype=torch.bfloat16)
-    transformer = NunchakuFluxTransformer2dModel.from_pretrained(
-        f"nunchaku-tech/nunchaku-flux.1-kontext-dev/svdq-{get_precision()}_r32-flux.1-kontext-dev.safetensors"
+    transformer = FluxTransformer2DModel.from_single_file(
+        pretrained_model_link_or_path_or_dict='weights/transformer/flux1-kontext-dev-Q8_0.gguf',
+        quantization_config=quantization_config,
+        config="weights/transformer/config.json",
+        dtype=torch.bfloat16
     )
-    text_encoder_2 = NunchakuT5EncoderModel.from_pretrained("mit-han-lab/nunchaku-t5/awq-int4-flux.1-t5xxl.safetensors")
+    # transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
+    text_encoder_2 = T5EncoderModel.from_pretrained(
+        'city96/t5-v1_1-xxl-encoder-gguf',
+        gguf_file='t5-v1_1-xxl-encoder-Q3_K_M.gguf',
+        # quantization_config=quantization_config,
+        # config="weights/text_encoder/t5/config.json",
+        dtype=torch.bfloat16
+    )
     # transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
 
     # apply_layerwise_casting(
@@ -45,12 +55,12 @@ def load_flux_kontext():
     #     non_blocking=True,
     # )
 
-    pipe = FluxKontextPipeline.from_pretrained(
+    pipe = FluxKontextInpaintPipeline.from_pretrained(
         "black-forest-labs/FLUX.1-Kontext-dev", 
         transformer=transformer,
         text_encoder_2=text_encoder_2,
         torch_dtype=torch.bfloat16, 
-        device_map="balanced"
+        # device_map="balanced"
     )
     # apply_layerwise_casting(
     #     pipe.text_encoder,
@@ -58,19 +68,19 @@ def load_flux_kontext():
     #     compute_dtype=torch.bfloat16,
     #     non_blocking=True,
     # )
-    apply_layerwise_casting(
-        pipe.transformer,
-        storage_dtype=torch.float8_e4m3fn,
-        compute_dtype=torch.bfloat16,
-        non_blocking=True,
-    )
+    # apply_layerwise_casting(
+    #     pipe.transformer,
+    #     storage_dtype=torch.float8_e4m3fn,
+    #     compute_dtype=torch.bfloat16,
+    #     non_blocking=True,
+    # )
     onload_device = torch.device("cuda")
     offload_device = torch.device("cpu")
-    apply_group_offloading(pipe.text_encoder, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True)
-    apply_group_offloading(pipe.text_encoder_2, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True)
-    pipe.transformer.enable_group_offload(onload_device=onload_device, offload_device=offload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
-    pipe.vae.enable_group_offload(onload_device=onload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
-    # pipe.to("cuda")
+    # apply_group_offloading(pipe.text_encoder, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True)
+    # apply_group_offloading(pipe.text_encoder_2, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True)
+    # pipe.transformer.enable_group_offload(onload_device=onload_device, offload_device=offload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
+    # pipe.vae.enable_group_offload(onload_device=onload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
+    pipe.to("cuda")
     return pipe
 
 
@@ -153,8 +163,8 @@ def load_qwen_image_edit():
 if __name__ == "__main__":
     # Example usage:
     pipeline = load_flux_kontext()
-    image = Image.open("examples/input.jpg").convert("RGB")
-    image.resize(48, 64)
+    image = Image.open("examples/images/input.jpg").convert("RGB")
+    # image.resize(48, 64)
     prompt = "Change the rabbit's color to purple, with a flash light background."
     inputs = {
         "image": image,

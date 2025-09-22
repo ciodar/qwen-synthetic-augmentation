@@ -8,17 +8,19 @@ from tqdm import tqdm
 
 
 def process_csv(pipeline, csv_path, output_dir):
-    with open(csv_path, mode='r') as file:
+    images_dir = os.path.join(os.path.dirname(csv_path), "images")
+    with open(csv_path, mode="r") as file:
         reader = csv.DictReader(file)
         for row in tqdm(reader):
-            input_image = row['input_image']
-            overlay_text = row.get('overlay_text', '')
-            overlay_image = row.get('overlay_image', '')
-
+            input_image = os.path.join(images_dir, row["input_image"])
+            overlay_text = row.get("overlay_text", "")
+            prompt = row.get("prompt")
+            if row.get("overlay_image", "") != "":
+                overlay_image = os.path.join(images_dir, row["overlay_image"])
             if overlay_text:
-                insert_text(pipeline, input_image, overlay_text, output_dir)
+                insert_text(pipeline, input_image, overlay_text, prompt, output_dir)
             elif overlay_image:
-                insert_image(pipeline, input_image, overlay_image, output_dir)
+                insert_image(pipeline, input_image, overlay_image, prompt, output_dir)
 
 
 def main(args):
