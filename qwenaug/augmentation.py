@@ -1,6 +1,5 @@
 from PIL import Image
 import torch
-import os
 import pathlib as pl
 
 def insert_text(pipeline, input_path, text, output_dir):
@@ -25,6 +24,7 @@ def insert_text(pipeline, input_path, text, output_dir):
         output_image.save(output_path)
         print("image saved at", output_path)
 
+
 def insert_image(pipeline, input_path, overlay_path, output_dir):
     prompt = f'Insert the object on the right in the image.'
     input_path = pl.Path(input_path)
@@ -32,7 +32,7 @@ def insert_image(pipeline, input_path, overlay_path, output_dir):
     output_path = pl.Path.joinpath(output_dir, filename)
     
     base_image = Image.open(input_path).convert("RGB")
-    overlay_image = Image.open(input_path).convert("RGB")
+    overlay_image = Image.open(overlay_path).convert("RGB")
 
     # Combine base_image and overlay_image
     width = base_image.width + overlay_image.width

@@ -166,13 +166,13 @@ if __name__ == "__main__":
     }
 
     if pipeline is not None:
-        print("Qwen-Image Diffusers model loaded successfully!")
+        print("pipeline loaded successfully!")
         # You can now use the 'image_pipeline' object to generate images.
         # For example:
         # image = image_pipeline("A photo of a cat wearing a hat")
         # image.save("cat_with_hat.png")
     else:
-        print("Failed to load Qwen-Image Diffusers model.")
+        print("Failed to load pipeline.")
 
     with torch.inference_mode():
         output = pipeline(**inputs)

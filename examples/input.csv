@@ -1,0 +1,4 @@
+input_image,overlay_text,overlay_image
+example1.jpg,Sample text,
+example2.jpg,,overlay1.jpg
+example3.jpg,Another text,overlay2.jpg
