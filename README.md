@@ -2,11 +2,13 @@
 
 ## Method
 
-The model uses a Deep Generative Model for image editing (Qwen or Kontext). Both models support both text-based and image-based editing. The models are loaded using the `load_qwen_image_edit` and `load_flux_kontext` functions, respectively. The models are then used to edit a source image, based on the input text or image.
+The model uses a Deep Generative Model for image editing (Qwen or Kontext). 
+Both models support both text-based and image-based editing. The models are loaded using the `load_qwen_image_edit` and `load_flux_kontext` functions, respectively. The models are then used to edit a source image, based on the input text or image.
 
 ## Inputs / Outputs
 ### Script Inputs
 - **csv_path** (str): Path to the CSV file containing the input data to be augmented.
+- **csv_path** (str): Path to the COCO annotations to be used. 
 - **output_dir** (str): Directory where the augmented images will be saved.
 
 ### CSV Fields
@@ -22,6 +24,14 @@ The model uses a Deep Generative Model for image editing (Qwen or Kontext). Both
 ## Environment
 
 ### Dependencies
+The complete dependencies are listed in the pyproject.toml file. You can install the dependencies using pip or uv:
+
+pip install -e .
+
+or 
+
+uv sync
+
 - Python 3.10 or higher
 - diffusers 0.36.0 nightly
 - transformers 4.56.3 nightly
@@ -53,6 +63,10 @@ The pipeline can be made significantly faster and less memory intensive by
 
 ## Improvement Ideas
 - **Avoid prompt**: right now the augmentation process takes a prompt as input. This could be avoided by exploiting the dataset categories. To improve qualitative results and the quality of the intended edit, the pipeline could use the dataset's textual captions (if available), or employ an Image Captioning model to describe the input image and the overlay. 
+
+- **Mask area**: the augmentation process is not limited by the area of interest. While this allow a larger degree of flexibility, composing the overlay image and the input image in the most coherent way, it also can produce unwanted modifications or degrade unwanted areas. Restricting the edit to a masked area can help mitigate this issue, and the text insertion is the task that could benefit the most.
+
+- **Multiple image conditioning**: The image insertion task is now being solved by concatenating both images, guiding the generation process through the prompt and then cropping the image. While this works to some extent, it is hard for the model to effectively understand the required modification each time. Recently released models such as Qwen-Image-Edit-2509 address this issue by allowing multiple image conditioning for editing.
 
 ## Reusability
 This pipeline uses a general image editing model and can be adapted to most use cases involving everyday life scenes. Model adaptations or dedicated model use or fine-tuning could be required for specific domains (Medical, manifacturing, ...)

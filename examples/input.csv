@@ -1,4 +1,11 @@
-input_image,overlay_text,overlay_image,prompt
-8588887973_79b1785aa6_z.jpg,,hat.png,Put the hat on the person.
-10091465_37f48aad05_z.jpg,DARIO,,Put the text {} on the person.
-4318932692_e3609f2d6d_z.jpg,,flippers.png,Change the shoes with flippers.
+img_id,overlay_text,overlay_image,prompt
+581262,,hat.png,Put the hat on the fire hydrant.
+113801,RESARO,,Put the text {} on the jet.
+418772,RESARO,,Put the text "{}" on the person.
+465143,DARIO,,Put the text "{}" on the person.
+233527,RESARO,,Put the text "{}" on the bus.
+305895,,banana.png,Put the person on the banana.
+305895,flippers.png,Change the shoes with flippers.
+96705,,hat2.png,Put the hat on the person.
+353652,BANANA,,Put the text "{}" on the person.
+410107,,hat.png,Put the hat on the person.

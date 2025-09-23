@@ -9,8 +9,10 @@ def download_qwen_weights(directory='weights'):
     quantized_repo = 'QuantStack/Qwen-Image-Edit-GGUF'
     # Download vae
     os.makedirs('weights/vae',exist_ok=True)
+    hf_hub_download(repo_id=original_repo, filename='vae/config.json', local_dir='weights')
     hf_hub_download(repo_id=original_repo, filename='vae/diffusion_pytorch_model.safetensors', local_dir='weights')
-    os.makedirs('weights/vae',exist_ok=True)
+    os.makedirs('weights/transformer',exist_ok=True)
+    hf_hub_download(repo_id=original_repo, filename='transformer/config.json', local_dir='weights')
     hf_hub_download(repo_id=quantized_repo, filename='Qwen_Image_Edit-Q8_0.gguf', local_dir='weights/transformer')
     # os.makedirs('weights/text_encoder',exist_ok=True)
     # hf_hub_download(repo_id='Qwen/Qwen2.5-VL-7B-Instruct',  local_dir='weights/transformer')
@@ -19,8 +21,10 @@ def download_kontext_weights(directory='weights'):
     original_repo = 'black-forest-labs/FLUX.1-Kontext-dev'
     quantized_repo = 'QuantStack/FLUX.1-Kontext-dev-GGUF'
     os.makedirs('weights/vae',exist_ok=True)
+    hf_hub_download(repo_id=original_repo, filename='vae/config.json', local_dir='weights')
     hf_hub_download(repo_id=original_repo, filename='vae/diffusion_pytorch_model.safetensors', local_dir='weights')
     os.makedirs('weights/transformer',exist_ok=True)
+    hf_hub_download(repo_id=original_repo, filename='transformer/config.json', local_dir='weights')
     hf_hub_download(repo_id=quantized_repo, filename='flux1-kontext-dev-Q8_0.gguf', local_dir='weights/transformer')
     os.makedirs('weights/text_encoder/t5', exist_ok=True)
     hf_hub_download(repo_id='city96/t5-v1_1-xxl-encoder-gguf', filename='t5-v1_1-xxl-encoder-Q8_0.gguf', local_dir='weights/text_encoder/t5')
@@ -92,8 +96,6 @@ def load_qwen_image_edit():
     # The original pipeline would be simply
     # pipeline = QwenImageEditPipeline.from_pretrained("Qwen/Qwen-Image-Edit")
 
-    # Since I'm GPU-poor, I'll load a heavily quantized model from QuantStack/Qwen-Image-Edit-GGUF
-    quantization_config=GGUFQuantizationConfig(compute_dtype=torch.bfloat16)
     # Load VAE
     vae = AutoencoderKLQwenImage.from_pretrained(
         'weights/vae/',
@@ -102,6 +104,7 @@ def load_qwen_image_edit():
     )
     print("Loaded vae!")
     # Load quantized Transformer
+    quantization_config=GGUFQuantizationConfig(compute_dtype=torch.bfloat16)
     transformer = QwenImageTransformer2DModel.from_single_file(
         pretrained_model_link_or_path_or_dict='weights/transformer/Qwen_Image_Edit-Q8_0.gguf',
         quantization_config=quantization_config,
@@ -118,7 +121,6 @@ def load_qwen_image_edit():
         #quantization_config=quantization_config,
         dtype=torch.bfloat16
     )
-    # skip the normalization layer
     # apply_layerwise_casting(
     #     text_encoder,
     #     storage_dtype=torch.float8_e4m3fn,
@@ -144,17 +146,16 @@ def load_qwen_image_edit():
     )
 
     print("pipeline loaded")
+
     # Apply group offloading
-    onload_device = torch.device("cuda")
-    offload_device = torch.device("cpu")
     # pipeline.transformer.enable_group_offload(onload_device=onload_device, offload_device=offload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
     # pipeline.vae.enable_group_offload(onload_device=onload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
-
     # Use the apply_group_offloading method for other model components
     # apply_group_offloading(pipeline.text_encoder, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True, record_stream=True)
+    
     pipeline.enable_model_cpu_offload()
+    
     # pipeline.to("cuda")
-    # pipeline.set_progress_bar_config(disable=None)
     
     return pipeline
 

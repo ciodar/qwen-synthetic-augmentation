@@ -1,15 +1,11 @@
 from PIL import Image
 import torch
+import os 
 import pathlib as pl
 import time
 
-def insert_text(pipeline, input_path, text, prompt, output_dir):
+def insert_text(pipeline, image, text, prompt, output_path):
     
-    input_path = pl.Path(input_path)
-    filename = input_path.name
-    output_path = pl.Path(output_dir).joinpath(filename)
-    
-    image = Image.open(input_path).convert("RGB")
     inputs = {
         "image": image,
         "prompt": prompt.format(text),
@@ -29,30 +25,29 @@ def insert_text(pipeline, input_path, text, prompt, output_dir):
     elapsed = time.time() - start_time
     peak_vram = torch.cuda.max_memory_allocated() / 1024**2 if torch.cuda.is_available() else 0.0
 
+    print(f"Processed {os.path.basename(output_path)} in {elapsed:.2f}s. Peak VRAM: {peak_vram:.2f} MiB. image saved in {output_path}")
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+
     output_image = output.images[0]
     output_image.save(output_path)
-    print(f"Processed {filename} in {elapsed:.2f}s. Peak VRAM: {peak_vram:.2f} MiB. image saved in {output_path}")
-
-
-def insert_image(pipeline, input_path, overlay_path, prompt, output_dir):
-
-    input_path = pl.Path(input_path)
-    filename = input_path.name
-    output_path = pl.Path(output_dir).joinpath(filename)
     
-    base_image = Image.open(input_path).convert("RGB")
+    
+
+
+def insert_image(pipeline, image, overlay_path, prompt, output_path):
+    base_image = image
     overlay_image = Image.open(overlay_path).convert("RGB")
     # mask_image=Image.open(pl.Path(input_path).parent.joinpath(input_path.stem + "_mask" + input_path.suffix))
 
     # Combine base_image and overlay_image
     width = base_image.width + overlay_image.width
     height = max(base_image.height, overlay_image.height)
-    print(base_image.width, base_image.height, overlay_image.width, overlay_image.height, width, height)
     image = Image.new("RGB", (width, height))
     image.paste(base_image, (0, 0))
     # TODO: Add padding, center overlay
     image.paste(overlay_image, (base_image.width, 0))
-    image.save(pl.Path(output_dir).joinpath(input_path.stem + "_overlay" + ".jpg"))
+    # image.save(pl.Path(output_dir).joinpath(input_path.stem + "_overlay" + ".jpg"))
 
     # mask_image = Image.open(overlay_path).convert("RGB")
     print(prompt)
@@ -65,12 +60,22 @@ def insert_image(pipeline, input_path, overlay_path, prompt, output_dir):
         "true_cfg_scale": 4.0,
         "negative_prompt": " ",
         "num_inference_steps": 50,
-        "width": base_image.width,
-        "height": base_image.height,
+        "width": image.width,
+        "height": image.height,
     }
+
+    start_time = time.time()
 
     with torch.inference_mode():
         output = pipeline(**inputs)
-        output_image = output.images[0]
-        output_image.save(output_path)
-        print("image saved at", output_path)
+    
+    elapsed = time.time() - start_time
+    peak_vram = torch.cuda.max_memory_allocated() / 1024**2 if torch.cuda.is_available() else 0.0
+
+    print(f"Processed {os.path.basename(output_path)} in {elapsed:.2f}s. Peak VRAM: {peak_vram:.2f} MiB. image saved in {output_path}")
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats()
+    
+    output_image = output.images[0]
+    output_image = output_image.crop(box=(0,0,base_image.width, base_image.height))
+    output_image.save(output_path)
