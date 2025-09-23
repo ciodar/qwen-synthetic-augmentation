@@ -10,4 +10,6 @@ RUN mkdir -p examples/annotations && \
     unzip annotations_trainval2017.zip -d examples/annotations && \
     rm annotations_trainval2017.zip
 
-CMD ["python", "main.py"]
+RUN ls -la
+
+CMD [".venv/bin/python", "main.py"]
