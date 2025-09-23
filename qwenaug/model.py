@@ -41,7 +41,7 @@ def load_flux_kontext():
     # transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
     text_encoder_2 = T5EncoderModel.from_pretrained(
         'city96/t5-v1_1-xxl-encoder-gguf',
-        gguf_file='t5-v1_1-xxl-encoder-Q3_K_M.gguf',
+        gguf_file='t5-v1_1-xxl-encoder-Q8_0.gguf',
         # quantization_config=quantization_config,
         # config="weights/text_encoder/t5/config.json",
         dtype=torch.bfloat16
@@ -103,12 +103,12 @@ def load_qwen_image_edit():
     print("Loaded vae!")
     # Load quantized Transformer
     transformer = QwenImageTransformer2DModel.from_single_file(
-        pretrained_model_link_or_path_or_dict='weights/transformer/Qwen_Image_Edit-Q4_0.gguf',
+        pretrained_model_link_or_path_or_dict='weights/transformer/Qwen_Image_Edit-Q8_0.gguf',
         quantization_config=quantization_config,
         config="weights/transformer/config.json",
         dtype=torch.bfloat16
     )
-    transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
+    # transformer.enable_layerwise_casting(storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16)
     print("Loaded transformer!")
     # Load Text Encoder
     # GGUF still not implemented see https://github.com/huggingface/transformers/issues/40049
@@ -119,12 +119,12 @@ def load_qwen_image_edit():
         dtype=torch.bfloat16
     )
     # skip the normalization layer
-    apply_layerwise_casting(
-        text_encoder,
-        storage_dtype=torch.float8_e4m3fn,
-        compute_dtype=torch.bfloat16,
-        non_blocking=True,
-    )
+    # apply_layerwise_casting(
+    #     text_encoder,
+    #     storage_dtype=torch.float8_e4m3fn,
+    #     compute_dtype=torch.bfloat16,
+    #     non_blocking=True,
+    # )
     # Load image encoder
     processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct")
     print("loaded processor")
@@ -147,12 +147,12 @@ def load_qwen_image_edit():
     # Apply group offloading
     onload_device = torch.device("cuda")
     offload_device = torch.device("cpu")
-    pipeline.transformer.enable_group_offload(onload_device=onload_device, offload_device=offload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
-    pipeline.vae.enable_group_offload(onload_device=onload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
+    # pipeline.transformer.enable_group_offload(onload_device=onload_device, offload_device=offload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
+    # pipeline.vae.enable_group_offload(onload_device=onload_device, offload_type="leaf_level", use_stream=True, record_stream=True)
 
     # Use the apply_group_offloading method for other model components
-    apply_group_offloading(pipeline.text_encoder, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True, record_stream=True)
-
+    # apply_group_offloading(pipeline.text_encoder, onload_device=onload_device, offload_type="block_level", num_blocks_per_group=2, use_stream=True, record_stream=True)
+    pipeline.enable_model_cpu_offload()
     # pipeline.to("cuda")
     # pipeline.set_progress_bar_config(disable=None)
     
