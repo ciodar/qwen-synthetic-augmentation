@@ -12,4 +12,4 @@ RUN mkdir -p examples/annotations && \
 
 RUN ls -la
 
-CMD [".venv/bin/python", "main.py"]
+CMD ["python", "main.py"]
