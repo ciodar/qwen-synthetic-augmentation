@@ -1,8 +1,8 @@
 FROM nvidia/cuda:12.8.0-base-ubuntu24.04
 
-RUN apt-get update
-RUN apt-get install -y python3.13
-RUN apt-get install -y python3-pip
+RUN apt update
+RUN apt install -y python3
+RUN apt install -y python3-pip
 
 WORKDIR /app
 COPY . /app

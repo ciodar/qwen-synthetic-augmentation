@@ -24,7 +24,7 @@ Both models support both text-based and image-based editing. The models are load
 The script can be executed as follows:
 
 ```shell 
-python main.py --csv_path path/to/csv --ann_path path/to/annotations --output_dir path/to/output/dir
+python3 main.py --csv_path path/to/csv --ann_path path/to/annotations --output_dir path/to/output/dir
 ```
 
 ## Environment
