@@ -24,7 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install requirements
-        run: uv pip install --system --locked
+        run: uv pip install . --system
 
   build_and_push:
     runs-on: ubuntu-latest

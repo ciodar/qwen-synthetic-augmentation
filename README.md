@@ -5,7 +5,7 @@
 The model uses a Deep Generative Model for image editing (Qwen or Kontext). 
 Both models support both text-based and image-based editing. The models are loaded using the `load_qwen_image_edit` and `load_flux_kontext` functions, respectively. The models are then used to edit a source image, based on the input text or image.
 
-## Inputs / Outputs
+## Execution
 ### Script Inputs
 - **csv_path** (str): Path to the CSV file containing the input data to be augmented.
 - **csv_path** (str): Path to the COCO annotations to be used. 
@@ -21,16 +21,26 @@ Both models support both text-based and image-based editing. The models are load
 
 - **Edited Image**: The image after the text or overlay image has been added.
 
+The script can be executed as follows:
+
+```shell 
+python main.py --csv_path path/to/csv --ann_path path/to/annotations --output_dir path/to/output/dir
+```
+
 ## Environment
 
 ### Dependencies
 The complete dependencies are listed in the pyproject.toml file. You can install the dependencies using pip or uv:
 
+```shell 
 pip install -e .
+```
 
 or 
 
+```shell
 uv sync
+```
 
 - Python 3.10 or higher
 - diffusers 0.36.0 nightly
