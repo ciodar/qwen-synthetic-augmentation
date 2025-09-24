@@ -17,6 +17,16 @@ Both models support both text-based and image-based editing. The models are load
 - **overlay_image** (str, optional): File path to the image to overlay. Leave blank if using `overlay_text`.
 - **prompt** (str): Text prompt to be used to guide the image editing for the line
 
+### Annotations
+To download annotations, run:
+
+```shell 
+    mkdir -p examples/annotations && \
+    curl -L http://images.cocodataset.org/annotations/annotations_trainval2017.zip -o annotations_trainval2017.zip && \
+    unzip annotations_trainval2017.zip -d examples/annotations && \
+    rm annotations_trainval2017.zip
+```
+
 ### Outputs
 
 - **Edited Image**: The image after the text or overlay image has been added.
