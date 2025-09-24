@@ -8,7 +8,7 @@ on:
       types: [opened, synchronize, reopened]
 
 jobs:
-  uv-install:
+  build_and_push:
     name: python
     runs-on: ubuntu-latest
 
@@ -26,9 +26,6 @@ jobs:
       - name: Install requirements
         run: uv pip install . --system
 
-  build_and_push:
-    runs-on: ubuntu-latest
-    steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
