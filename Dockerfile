@@ -12,4 +12,4 @@ RUN mkdir -p examples/annotations && \
 
 RUN ls -la
 
-CMD ["python", "main.py"]
+CMD ["/bin/bash"]

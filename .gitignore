@@ -1,6 +1,8 @@
 .vscode/
 .venv/
 .python-version
+build/
 
 weights/
 *.pyc
+*.egg-info
