@@ -13,7 +13,7 @@ RUN mkdir -p examples/annotations && \
     unzip annotations_trainval2017.zip -d examples/annotations && \
     rm annotations_trainval2017.zip
 
-RUN pip install .
+RUN pip install . --break-system-packages
 RUN ls -la
 
 
