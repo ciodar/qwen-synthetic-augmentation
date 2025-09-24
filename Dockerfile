@@ -1,5 +1,7 @@
 FROM nvidia/cuda:12.8.0-base-ubuntu24.04
 
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
 RUN apt-get install -y python3.13
 RUN apt-get install -y python3-pip
 
